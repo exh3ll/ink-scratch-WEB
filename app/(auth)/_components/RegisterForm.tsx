@@ -1,108 +1,115 @@
+// app/(auth)/_components/RegisterForm.tsx
 "use client";
 
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { registerSchema, type RegisterFormData } from "../schema";
 import Link from "next/link";
-import { RegisterData, registerSchema } from "../schema";
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function RegisterForm() {
-    const router = useRouter();
-    const {
-        register,
-        handleSubmit,
-        formState: { errors, isSubmitting },
-    } = useForm<RegisterData>({
-        resolver: zodResolver(registerSchema),
-        mode: "onSubmit",
-    });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const [pending, setTransition] = useTransition()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+  });
 
-    const submit = async (values: RegisterData) => {
-        setTransition( async () => {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            router.push("/login");
-        })
-        // GO TO LOGIN PAGE
-        console.log("register", values);
-    };
+  const onSubmit = async (data: RegisterFormData) => {
+    console.log("Register:", data);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  };
 
-    return (
-        <form onSubmit={handleSubmit(submit)} className="space-y-4">
-            <div className="space-y-1">
-                <label className="text-sm font-medium" htmlFor="name">Full name</label>
-                <input
-                    id="name"
-                    type="text"
-                    autoComplete="name"
-                    className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
-                    {...register("name")}
-                    placeholder="Jane Doe"
-                />
-                {errors.name?.message && (
-                    <p className="text-xs text-red-600">{errors.name.message}</p>
-                )}
-            </div>
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="text-center">
+        <h1 className="logo-gradient">Ink Scratch</h1>
+        <p className="mt-3 text-text-secondary text-lg">
+          Join and start reading instantly
+        </p>
+      </div>
 
-            <div className="space-y-1">
-                <label className="text-sm font-medium" htmlFor="email">Email</label>
-                <input
-                    id="email"
-                    type="email"
-                    autoComplete="email"
-                    className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
-                    {...register("email")}
-                    placeholder="you@example.com"
-                />
-                {errors.email?.message && (
-                    <p className="text-xs text-red-600">{errors.email.message}</p>
-                )}
-            </div>
+      <div className="space-y-4">
+        <input
+          {...register("username")}
+          type="text"
+          placeholder="Username"
+          className="input-field"
+        />
+        {errors.username && (
+          <p className="text-sm text-red-600 -mt-2">{errors.username.message}</p>
+        )}
 
-            <div className="space-y-1">
-                <label className="text-sm font-medium" htmlFor="password">Password</label>
-                <input
-                    id="password"
-                    type="password"
-                    autoComplete="new-password"
-                    className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
-                    {...register("password")}
-                    placeholder="••••••"
-                />
-                {errors.password?.message && (
-                    <p className="text-xs text-red-600">{errors.password.message}</p>
-                )}
-            </div>
+        <input
+          {...register("email")}
+          type="email"
+          placeholder="Email"
+          className="input-field"
+        />
+        {errors.email && (
+          <p className="text-sm text-red-600 -mt-2">{errors.email.message}</p>
+        )}
 
-            <div className="space-y-1">
-                <label className="text-sm font-medium" htmlFor="confirmPassword">Confirm password</label>
-                <input
-                    id="confirmPassword"
-                    type="password"
-                    autoComplete="new-password"
-                    className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
-                    {...register("confirmPassword")}
-                    placeholder="••••••"
-                />
-                {errors.confirmPassword?.message && (
-                    <p className="text-xs text-red-600">{errors.confirmPassword.message}</p>
-                )}
-            </div>
+        <div className="relative">
+          <input
+            {...register("password")}
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            className="input-field pr-12"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary transition"
+          >
+            {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+          </button>
+        </div>
+        {errors.password && (
+          <p className="text-sm text-red-600 -mt-2">{errors.password.message}</p>
+        )}
 
-            <button
-                type="submit"
-                disabled={isSubmitting || pending}
-                className="h-10 w-full rounded-md bg-foreground text-background text-sm font-semibold hover:opacity-90 disabled:opacity-60"
-            >
-                { isSubmitting || pending ? "Creating account..." : "Create account"}
-            </button>
+        <div className="relative">
+          <input
+            {...register("confirmPassword")}
+            type={showConfirmPassword ? "text" : "password"}
+            placeholder="Confirm Password"
+            className="input-field pr-12"
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary transition"
+          >
+            {showConfirmPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+          </button>
+        </div>
+        {errors.confirmPassword && (
+          <p className="text-sm text-red-600 -mt-2">
+            {errors.confirmPassword.message}
+          </p>
+        )}
+      </div>
 
-            <div className="mt-1 text-center text-sm">
-                Already have an account? <Link href="/login" className="font-semibold hover:underline">Log in</Link>
-            </div>
-        </form>
-    );
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="btn-primary"
+      >
+        {isSubmitting ? "Creating Account..." : "Register"}
+      </button>
+
+      <p className="text-center text-text-secondary">
+        Already have an account?{" "}
+        <Link href="/login" className="text-orange font-bold hover:underline">
+          Log In
+        </Link>
+      </p>
+    </form>
+  );
 }
