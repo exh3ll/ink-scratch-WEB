@@ -5,15 +5,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginFormData } from "../schema";
 import Link from "next/link";
-import { useRouter } from "next/navigation";   // ← Add this import
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState<string>("");
 
-  const router = useRouter();   // ← For redirection
+  const router = useRouter();
 
   const {
     register,
@@ -24,14 +25,41 @@ export default function LoginForm() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    console.log("Login successful:", data, { rememberMe });
+    setError("");
+    
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
-    // Simulate API delay (remove this when using real auth)
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      const result = await response.json();
 
-    // TODO: Replace this simulation with real authentication later
-    // For now, just redirect to dashboard
-    router.push("/dashboard");
+      if (!response.ok) {
+        setError(result.error || "Login failed");
+        return;
+      }
+
+      // Store token in localStorage or cookie
+      if (rememberMe) {
+        localStorage.setItem("token", result.token);
+        localStorage.setItem("user", JSON.stringify(result.user));
+      } else {
+        sessionStorage.setItem("token", result.token);
+        sessionStorage.setItem("user", JSON.stringify(result.user));
+      }
+
+      console.log("Login successful:", result);
+      
+      // Redirect to dashboard
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("An unexpected error occurred. Please try again.");
+    }
   };
 
   return (
@@ -42,6 +70,12 @@ export default function LoginForm() {
           Log in to continue your reading journey
         </p>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
 
       <div className="space-y-4">
         <input
