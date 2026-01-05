@@ -7,7 +7,7 @@ export default function ForgotPasswordPage() {
       <div className="auth-card text-center">
         <h1 className="logo-gradient mb-6">Reset Password</h1>
         <p className="text-text-secondary mb-8">
-          Enter your email and we'll send you a link to reset your password.
+          Enter your email and we&apos;ll send you a link to reset your password.
         </p>
         <input
           type="email"

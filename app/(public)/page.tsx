@@ -9,7 +9,7 @@ export default function HomePage() {
       <Header />
 
       {/* Add top padding to account for fixed header */}
-      <div className="pt-24 min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="pt-24 min-h-screen bg-linear-to-br from-gray-50 to-gray-100">
         {/* Hero Section */}
         <section className="px-6 py-16 md:py-24 lg:py-32 text-center">
           <div className="max-w-5xl mx-auto">
@@ -47,7 +47,7 @@ export default function HomePage() {
             </h2>
             <div className="grid md:grid-cols-3 gap-12">
               <div className="flex flex-col items-center">
-                <div className="w-24 h-24 mb-6 bg-gradient-to-r from-orange to-red rounded-full flex items-center justify-center shadow-lg">
+                <div className="w-24 h-24 mb-6 bg-linear-to-r from-orange to-red rounded-full flex items-center justify-center shadow-lg">
                   <span className="text-4xl">⚡</span>
                 </div>
                 <h3 className="text-2xl font-bold text-text-primary mb-3">Instant Access</h3>
@@ -57,7 +57,7 @@ export default function HomePage() {
               </div>
 
               <div className="flex flex-col items-center">
-                <div className="w-24 h-24 mb-6 bg-gradient-to-r from-orange to-red rounded-full flex items-center justify-center shadow-lg">
+                <div className="w-24 h-24 mb-6 bg-linear-to-r from-orange to-red rounded-full flex items-center justify-center shadow-lg">
                   <span className="text-4xl">☁️</span>
                 </div>
                 <h3 className="text-2xl font-bold text-text-primary mb-3">Cloud Sync</h3>
@@ -67,7 +67,7 @@ export default function HomePage() {
               </div>
 
               <div className="flex flex-col items-center">
-                <div className="w-24 h-24 mb-6 bg-gradient-to-r from-orange to-red rounded-full flex items-center justify-center shadow-lg">
+                <div className="w-24 h-24 mb-6 bg-linear-to-r from-orange to-red rounded-full flex items-center justify-center shadow-lg">
                   <span className="text-4xl">📱</span>
                 </div>
                 <h3 className="text-2xl font-bold text-text-primary mb-3">Anywhere, Anytime</h3>
@@ -90,7 +90,7 @@ export default function HomePage() {
             </p>
             <Link href="/register">
               <button className="mt-10 btn-primary text-xl px-14 py-6">
-                Get Started — It's Free
+                Get Started — It&apos;s Free
               </button>
             </Link>
           </div>

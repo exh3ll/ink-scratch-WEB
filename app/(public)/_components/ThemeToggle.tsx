@@ -5,13 +5,13 @@ import { useEffect, useState } from "react";
 type Theme = "light" | "dark" | "system";
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("system");
-
-  useEffect(() => {
-    const stored = typeof window !== "undefined" ? localStorage.getItem("theme") as Theme | null : null;
-    const initial: Theme = stored ?? "system";
-    setTheme(initial);
-  }, []);
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("theme") as Theme | null;
+      return stored ?? "system";
+    }
+    return "system";
+  });
 
   useEffect(() => {
     const root = document.documentElement;
