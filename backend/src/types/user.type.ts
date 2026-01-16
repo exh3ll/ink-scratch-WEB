@@ -5,7 +5,7 @@ export const UserSchema = z.object({
     password: z.string().min(5),
     username: z.string().min(3).max(30),
     fullName: z.string().optional(),
-    phoneNumber: z.string().optional(), // ✅ Changed from z.int() to z.string().optional()
+    phoneNumber: z.string().optional(), 
     gender: z.enum(['male', 'female', 'other']),
     profilePicture: z.string().optional(),
     bio: z.string().max(160).optional(),
