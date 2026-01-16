@@ -1,19 +1,9 @@
 @import "tailwindcss";
 
-@theme {
-  --color-orange: #FF512F;
-  --color-red: #DD2476;
-  --color-accent: #FF512F;
-  --color-text-primary: #1C1C1C;
-  --color-text-secondary: #6B6B6B;
-  --color-card: #F7F7F7;
-  --color-divider: #E0E0E0;
-}
-
 /* Custom styles matching your Flutter theme */
 @layer components {
   .btn-primary {
-    @apply w-full bg-linear-to-r from-orange to-red text-white font-semibold rounded-2xl px-6 py-4 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed;
+    @apply w-full bg-gradient-to-r from-orange to-red text-white font-semibold rounded-2xl px-6 py-4 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed;
   }
 
   .input-field {
@@ -21,7 +11,7 @@
   }
 
   .auth-container {
-    @apply min-h-screen flex items-center justify-center bg-linear-to-br from-gray-50 to-gray-100 px-4;
+    @apply min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4;
   }
 
   .auth-card {
@@ -29,6 +19,6 @@
   }
 
   .logo-gradient {
-    @apply bg-linear-to-r from-orange to-red text-transparent bg-clip-text font-bold text-4xl;
+    @apply bg-gradient-to-r from-orange to-red text-transparent bg-clip-text font-bold text-4xl;
   }
 }
