@@ -1,61 +1,55 @@
-import bcryptjs from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { getUserByEmail, createUser } from "../repositories/user.repository";
+import { CreateUserDTO, LoginUserDTO } from "../dtos/user.dto";
 import { HttpError } from "../errors/http-error";
-import { RegisterInput, LoginInput } from "../types/user.type";
+import { UserRepository } from "../repositories/user.repository";
+import bcryptjs from "bcryptjs";
+import  jwt  from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
 
-export const registerUser = async (data: RegisterInput) => {
-    const existingUser = await getUserByEmail(data.email);
-    if (existingUser) {
-        throw new HttpError(400, "Email already exists");
-    }
+let userRepository = new UserRepository();
 
-    const hashedPassword = await bcryptjs.hash(data.password, 10);
-
-    const newUser = await createUser({
-        name: data.name,
-        email: data.email,
-        password: hashedPassword,
-        role: "user"
-    });
-
-    return {
-        message: "User created successfully",
-        user: {
-            id: newUser._id,
-            name: newUser.name,
-            email: newUser.email,
-            role: newUser.role
+export class UserService{
+    async createUser(data:CreateUserDTO) {
+        // buhsiness logic before creating User
+        const emailCheck = await userRepository.getUserByEmail(data.email);
+        if(emailCheck){
+            throw new Error("Email already in use");
         }
-    };
-};
+        const usernameCheck = await userRepository.getUserByUsername(data.username);
+        if(usernameCheck){
+            throw new Error("Username already in use");
+        }
 
-export const loginUser = async (data: LoginInput) => {
-    const user = await getUserByEmail(data.email);
-    if (!user) {
-        throw new HttpError(401, "Invalid email or password");
+        // hash password
+        const hashedPassword = await bcryptjs.hash(data.password,10); //10 - complexity
+        data.password = hashedPassword;
+
+        // Create user
+        const newUser = await userRepository.createUser(data);
+        return newUser;
     }
 
-    const isValid = await bcryptjs.compare(data.password, user.password);
-    if (!isValid) {
-        throw new HttpError(401, "Invalid email or password");
-    }
+    async loginUser(data: LoginUserDTO){
+        const user = await userRepository.getUserByEmail(data.email);
+        if(!user){
+            throw new HttpError(404, "User not found");
+        }
+        // compare password
+        const validPassword = await bcryptjs.compare(data.password, user.password);
+        // plaintext, hahed
+        if(!validPassword){
+            throw new HttpError(401, "Invalid Credentials");
+        }
 
-    const token = jwt.sign(
-        { id: user._id, email: user.email, role: user.role },
-        JWT_SECRET,
-        { expiresIn: "7d" }
-    );
-
-    return {
-        message: "Login successful",
-        token,
-        user: {
+        // generate jwt
+        const payload = {// user indentifier
             id: user._id,
-            name: user.name,
             email: user.email,
-            role: user.role
+            username: user.username,
+            fullName: user.fullName,
+            phoneNumber: user.phoneNumber,
+            role: user.role 
         }
-    };
-};
+        const token = jwt.sign(payload, JWT_SECRET, {expiresIn: '30d'});
+        return {token,user}
+    }
+}

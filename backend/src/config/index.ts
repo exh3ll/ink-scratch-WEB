@@ -1,6 +1,10 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-export const JWT_SECRET = process.env.JWT_SECRET || "anonymous_secret_key";
-export const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/foodify_db";
-export const PORT = process.env.PORT || 5050;
+export const PORT: number = 
+    process.env.PORT ? parseInt(process.env.PORT) : 3000;
+export const MONGODB_URI: string =
+    process.env.MONGODB_URI || 'mongodb://localhost:27017/defaultdb';
+
+export const JWT_SECRET: string =
+    process.env.JWT_SECRET || 'default';

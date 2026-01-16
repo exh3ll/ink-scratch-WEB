@@ -1,47 +1,52 @@
+import { UserService } from "../services/user.service";
 import { Request, Response } from "express";
-import { RegisterSchema, LoginSchema } from "../types/user.type";
-import { registerUser, loginUser } from "../services/user.service";
+import z, { success } from "zod";
+import { CreateUserDTO, LoginUserDTO } from "../dtos/user.dto";
+import { parse } from "path";
 
-export const register = async (req: Request, res: Response) => {
-    const result = RegisterSchema.safeParse(req.body);
+let userService = new UserService();
 
-    if (!result.success) {
-        return res.status(400).json({
-            success: false,
-            message: "Validation failed",
-            errors: result.error.format(),  // This is better and clean
-        });
+export class AuthController{
+    async register(req: Request, res: Response){
+        try{
+            //validate request body
+            const parsedData = CreateUserDTO.safeParse(req.body);
+            if(!parsedData.success){ // validation failed
+                return res.status(400).json(
+                    {
+                        success: false, message: z.prettifyError(parsedData.error)
+                    }
+                )
+            }
+            const userData: CreateUserDTO = parsedData.data;
+            const newUser = await userService.createUser(userData);
+            return res.status(201).json({
+                success: true, message: "User Created", data: newUser
+            });
+            
+        }catch(error: Error | any){ // exception handling
+            return res.status(500).json(
+                {success: false, message: error.message || "Internal Service Error"}
+            )
+        }
     }
-
-    try {
-        const data = await registerUser(result.data);
-        res.status(201).json({ success: true, ...data });
-    } catch (error: any) {
-        res.status(error.statusCode || 500).json({
-            success: false,
-            message: error.message || "Server error",
-        });
+    async login(req: Request, res: Response){
+        try{
+            const parsedData = LoginUserDTO.safeParse(req.body);
+            if(!parsedData.success){
+                return res.status(400).json(
+                    {success: false, message: z.prettifyError(parsedData.error)}
+                )
+            }
+            const loginData: LoginUserDTO = parsedData.data;
+            const {token, user} = await userService.loginUser(loginData);
+            return res.status(200).json(
+                {success: true, message: "Login successful", data: user, token}
+            );
+        }catch(error: Error | any){
+            return res.status(error.statusCode ?? 500).json(
+                {success: false, message: error.message || "Itenal Server Error"}
+            )
+        }
     }
-};
-
-export const login = async (req: Request, res: Response) => {
-    const result = LoginSchema.safeParse(req.body);
-
-    if (!result.success) {
-        return res.status(400).json({
-            success: false,
-            message: "Validation failed",
-            errors: result.error.format(),  // Clean formatted errors
-        });
-    }
-
-    try {
-        const data = await loginUser(result.data);
-        res.json({ success: true, ...data });
-    } catch (error: any) {
-        res.status(error.statusCode || 500).json({
-            success: false,
-            message: error.message || "Server error",
-        });
-    }
-};
+}
