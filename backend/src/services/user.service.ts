@@ -2,54 +2,68 @@ import { CreateUserDTO, LoginUserDTO } from "../dtos/user.dto";
 import { HttpError } from "../errors/http-error";
 import { UserRepository } from "../repositories/user.repository";
 import bcryptjs from "bcryptjs";
-import  jwt  from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
 
 let userRepository = new UserRepository();
 
-export class UserService{
-    async createUser(data:CreateUserDTO) {
-        // buhsiness logic before creating User
+export class UserService {
+    async createUser(data: CreateUserDTO) {
+        // Business logic before creating User
         const emailCheck = await userRepository.getUserByEmail(data.email);
-        if(emailCheck){
+        if (emailCheck) {
             throw new Error("Email already in use");
         }
         const usernameCheck = await userRepository.getUserByUsername(data.username);
-        if(usernameCheck){
+        if (usernameCheck) {
             throw new Error("Username already in use");
         }
 
-        // hash password
-        const hashedPassword = await bcryptjs.hash(data.password,10); //10 - complexity
+        // Hash password
+        const hashedPassword = await bcryptjs.hash(data.password, 10);
         data.password = hashedPassword;
 
         // Create user
         const newUser = await userRepository.createUser(data);
-        return newUser;
+
+        // ✅ NEW: Generate JWT token for the new user (same as login)
+        const payload = {
+            id: newUser._id,
+            email: newUser.email,
+            username: newUser.username,
+            fullName: newUser.fullName,
+            phoneNumber: newUser.phoneNumber,
+            role: newUser.role
+        };
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' });
+
+        // ✅ NEW: Return both token and user (same as login)
+        return { token, user: newUser };
     }
 
-    async loginUser(data: LoginUserDTO){
+    async loginUser(data: LoginUserDTO) {
         const user = await userRepository.getUserByEmail(data.email);
-        if(!user){
+        if (!user) {
             throw new HttpError(404, "User not found");
         }
-        // compare password
+        
+        // Compare password
         const validPassword = await bcryptjs.compare(data.password, user.password);
-        // plaintext, hahed
-        if(!validPassword){
+        if (!validPassword) {
             throw new HttpError(401, "Invalid Credentials");
         }
 
-        // generate jwt
-        const payload = {// user indentifier
+        // Generate JWT
+        const payload = {
             id: user._id,
             email: user.email,
             username: user.username,
             fullName: user.fullName,
             phoneNumber: user.phoneNumber,
-            role: user.role 
-        }
-        const token = jwt.sign(payload, JWT_SECRET, {expiresIn: '30d'});
-        return {token,user}
+            role: user.role
+        };
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' });
+        
+        return { token, user };
     }
 }
