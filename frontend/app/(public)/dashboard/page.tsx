@@ -1,8 +1,40 @@
 // app/(app)/dashboard/page.tsx
-import Header from "../../(public)/_components/Header"; // Path from (app) to (public)
+"use client";
+
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import Header from "../_components/Header";
 import Link from "next/link";
 
 export default function DashboardPage() {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange mx-auto"></div>
+          <p className="mt-4 text-text-secondary">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
+
   // Mock data - replace with real data from your backend later
   const continueReading = [
     { title: "One Piece", chapter: 1124, progress: 75 },
@@ -29,13 +61,37 @@ export default function DashboardPage() {
       {/* Main Content with padding for fixed header */}
       <div className="pt-24 min-h-screen bg-gray-50">
         <div className="px-6 py-10 max-w-7xl mx-auto">
-          {/* Welcome Section */}
-          <h1 className="text-4xl md:text-5xl font-bold text-text-primary mb-2">
-            Welcome back!
-          </h1>
-          <p className="text-xl text-text-secondary">
-            Pick up right where you left off
-          </p>
+          {/* Welcome Section with User Info */}
+          <div className="mb-8">
+            <h1 className="text-4xl md:text-5xl font-bold text-text-primary mb-2">
+              Welcome back, {user?.fullName || user?.username}!
+            </h1>
+            <p className="text-xl text-text-secondary">
+              Pick up right where you left off
+            </p>
+          </div>
+
+          {/* User Stats Card (Optional) */}
+          <div className="bg-white rounded-2xl shadow-md p-6 mb-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <p className="text-3xl font-bold text-orange">{continueReading.length}</p>
+                <p className="text-sm text-text-secondary mt-1">Currently Reading</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-orange">{myLibrary.length}</p>
+                <p className="text-sm text-text-secondary mt-1">In Library</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-orange">247</p>
+                <p className="text-sm text-text-secondary mt-1">Chapters Read</p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-orange">24h</p>
+                <p className="text-sm text-text-secondary mt-1">Reading Time</p>
+              </div>
+            </div>
+          </div>
 
           {/* Continue Reading Section */}
           <section className="mt-12">
