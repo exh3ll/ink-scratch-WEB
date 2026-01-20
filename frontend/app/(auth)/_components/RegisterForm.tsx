@@ -8,6 +8,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { authService } from "@/lib/services/auth.service";
+import { cookieUtils } from "@/lib/cookies";
 
 export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,28 +32,12 @@ export default function RegisterForm() {
     setSuccess("");
 
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: data.username,
-          email: data.email,
-          password: data.password,
-        }),
-      });
+      // Call backend API
+      const result = await authService.register(data);
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        setError(result.error || "Registration failed");
-        return;
-      }
-
-      // Store token
-      localStorage.setItem("token", result.token);
-      localStorage.setItem("user", JSON.stringify(result.user));
+      // Store token and user data in cookies (always remember for registration)
+      cookieUtils.setToken(result.token, true);
+      cookieUtils.setUser(result.data, true);
 
       setSuccess("Account created successfully! Redirecting...");
       
@@ -61,9 +47,9 @@ export default function RegisterForm() {
       setTimeout(() => {
         router.push("/dashboard");
       }, 1500);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Registration error:", err);
-      setError("An unexpected error occurred. Please try again.");
+      setError(err.message || "An unexpected error occurred. Please try again.");
     }
   };
 
@@ -89,6 +75,39 @@ export default function RegisterForm() {
       )}
 
       <div className="space-y-4">
+        <input
+          {...register("fullName")}
+          type="text"
+          placeholder="Full Name"
+          className="input-field"
+        />
+        {errors.fullName && (
+          <p className="text-sm text-red-600 -mt-2">{errors.fullName.message}</p>
+        )}
+
+        <input
+          {...register("phoneNumber")}
+          type="tel"
+          placeholder="Phone Number"
+          className="input-field"
+        />
+        {errors.phoneNumber && (
+          <p className="text-sm text-red-600 -mt-2">{errors.phoneNumber.message}</p>
+        )}
+
+        <select
+          {...register("gender")}
+          className="input-field"
+        >
+          <option value="">Select Gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+        {errors.gender && (
+          <p className="text-sm text-red-600 -mt-2">{errors.gender.message}</p>
+        )}
+
         <input
           {...register("username")}
           type="text"
