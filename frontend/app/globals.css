@@ -1,24 +1,64 @@
 @import "tailwindcss";
 
-/* Custom styles matching your Flutter theme */
-@layer components {
-  .btn-primary {
-    @apply w-full bg-gradient-to-r from-orange to-red text-white font-semibold rounded-2xl px-6 py-4 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed;
-  }
+/* Tailwind v4 Custom Theme */
+@theme {
+  --color-orange: #FF6B35;
+  --color-red: #E63946;
+  --color-background: #FFFFFF;
+  --color-card: #F8F9FA;
+  --color-divider: #E0E0E0;
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #6C757D;
+}
 
-  .input-field {
-    @apply w-full px-4 py-4 bg-card text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-orange/50 transition-all text-base placeholder-text-secondary;
-  }
+/* Custom styles */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-  .auth-container {
-    @apply min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4;
-  }
+/* Custom utility classes */
+.logo-gradient {
+  background: linear-gradient(135deg, #FF6B35 0%, #E63946 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2.5rem;
+  font-weight: bold;
+}
 
-  .auth-card {
-    @apply bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md;
-  }
+.btn-primary {
+  width: 100%;
+  background: linear-gradient(to right, #FF6B35, #E63946);
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: opacity 0.2s;
+}
 
-  .logo-gradient {
-    @apply bg-gradient-to-r from-orange to-red text-transparent bg-clip-text font-bold text-4xl;
-  }
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #E0E0E0;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: transparent;
+  box-shadow: 0 0 0 2px #FF6B35;
 }
