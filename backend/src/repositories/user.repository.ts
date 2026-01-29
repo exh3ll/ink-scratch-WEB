@@ -10,6 +10,7 @@ export interface IUserRepository {
     updateUser(id: string, updateData: Partial<IUser>): Promise<IUser | null>;
     deleteUser(id: string): Promise<boolean>;
 }
+
 // MongoDB implementation of USerRepository
 export class UserRepository implements IUserRepository {
     async createUser(userData: Partial<IUser>): Promise<IUser> {
@@ -17,15 +18,14 @@ export class UserRepository implements IUserRepository {
         return await user.save();
     }
     async getUserByEmail(email: string): Promise<IUser | null> {
-        const user = await UserModel.findOne({"email" : email})
+        const user = await UserModel.findOne({"email" : email});
         return user;
     }
     async getUserByUsername(Username: string): Promise<IUser | null> {
-        const user = await UserModel.findOne({"username": Username})
+        const user = await UserModel.findOne({"username": Username});
         return user;
     }
     async getUserById(id: string): Promise<IUser | null> {
-        // userModel.findOne({"_id":id});
         const user = await UserModel.findById(id);
         return user;
     }
@@ -33,17 +33,18 @@ export class UserRepository implements IUserRepository {
         const users = await UserModel.find();
         return users;
     }
+
+    // Updated method to handle profilePicture and bio update
     async updateUser(id: string, updateData: Partial<IUser>): Promise<IUser | null> {
-        // UserModel.updateOne({_id: id}, { $set: updateData});
+        // Update the user with new data (e.g., profile picture or bio)
         const updatedUser = await UserModel.findByIdAndUpdate(
-            id, updateData, {new: true} // return the updated document 
+            id, updateData, { new: true } // Return the updated user document
         );
         return updatedUser;
     }
+
     async deleteUser(id: string): Promise<boolean> {
-        // UserModel.deleteOne({_id: id});
         const result = await UserModel.findByIdAndDelete(id);
         return result ? true : false;
     }
 }
-
