@@ -2,7 +2,7 @@ import { UserService } from "../services/user.service";
 import { Request, Response } from "express";
 import z from "zod";
 import { CreateUserDTO, LoginUserDTO, UpdateUserDTO } from "../dtos/user.dto";
-import upload from "../config/upload.config"; // Multer configuration for file uploads
+import upload from "../config/upload.config";
 
 let userService = new UserService();
 
@@ -62,7 +62,6 @@ export class AuthController {
         }
     }
 
-    // Updated profile update method
     async updateProfile(req: Request, res: Response) {
         upload.single("profileImage")(req, res, async (err: any) => {
             if (err) {
@@ -74,7 +73,10 @@ export class AuthController {
 
             try {
                 const { bio } = req.body;
-                const filePath = req.file?.path; // Get the uploaded file path
+                // ✅ Normalize backslashes to forward slashes (Windows fix)
+                const filePath = req.file?.path
+                    ? req.file.path.replace(/\\/g, '/')
+                    : undefined;
 
                 if (!req.user || !req.user.id) {
                     return res.status(400).json({
@@ -84,9 +86,9 @@ export class AuthController {
                 }
 
                 const updatedUser = await userService.updateProfile({
-                    userId: req.user.id, // Assuming user ID is in req.user (after authentication)
-                    profilePicture: filePath, // Store the file path in the profilePicture field
-                    bio: bio, // Update the bio if provided
+                    userId: req.user.id,
+                    profilePicture: filePath,
+                    bio: bio,
                 });
 
                 return res.status(200).json({
