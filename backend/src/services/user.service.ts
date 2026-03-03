@@ -13,7 +13,6 @@ import { IUser } from "../models/user.model";
 
 let userRepository = new UserRepository();
 
-// ✅ User response type (what we send to frontend — no sensitive data)
 interface UserResponse {
     _id: string;
     email: string;
@@ -24,7 +23,7 @@ interface UserResponse {
     role: 'user' | 'admin';
     profilePicture: string | null;
     bio?: string;
-    theme: 'light' | 'dark' | 'system'; // ✅ Theme included in every response
+    theme: 'light' | 'dark' | 'system';
     createdAt: Date;
     updatedAt: Date;
 }
@@ -46,7 +45,6 @@ export class UserService {
         return `${baseUrl}/${relativePath}`;
     }
 
-    // ✅ formatUserResponse now includes theme
     private formatUserResponse(user: IUser): UserResponse {
         return {
             _id: user._id.toString(),
@@ -58,7 +56,7 @@ export class UserService {
             role: user.role,
             profilePicture: this.getFullImageUrl(user.profilePicture),
             bio: user.bio,
-            theme: user.theme || 'system', // ✅ Default to system if missing
+            theme: user.theme || 'system',
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
         };
@@ -78,7 +76,6 @@ export class UserService {
         data.password = hashedPassword;
 
         const { confirmPassword, ...userDataToSave } = data;
-
         const newUser = await userRepository.createUser(userDataToSave);
 
         const payload = {
@@ -118,14 +115,13 @@ export class UserService {
         return { token, user: this.formatUserResponse(user) };
     }
 
-    // ✅ updateProfile now accepts and saves theme
     async updateProfile(data: UpdateUserDTO & { userId: string }) {
         const { userId, profilePicture, bio, theme } = data;
 
         const updatedUser = await userRepository.updateUser(userId, {
             profilePicture,
             bio,
-            ...(theme ? { theme } : {}), // ✅ Only update theme if provided
+            ...(theme ? { theme } : {}),
         });
 
         if (!updatedUser) {
@@ -135,7 +131,6 @@ export class UserService {
         return this.formatUserResponse(updatedUser);
     }
 
-    // ✅ Dedicated method for updating theme only
     async updateTheme(userId: string, theme: 'light' | 'dark' | 'system'): Promise<UserResponse> {
         const updatedUser = await userRepository.updateUser(userId, { theme });
 
@@ -203,18 +198,34 @@ export class UserService {
     async requestPasswordReset(email: string): Promise<void> {
         const user = await userRepository.getUserByEmail(email);
         if (!user) {
+            // Don't reveal whether email exists
             console.log('⚠️ Password reset requested for non-existent email:', email);
             return;
         }
 
         const resetToken = crypto.randomBytes(32).toString('hex');
         const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-        const expires = new Date(Date.now() + 60 * 60 * 1000);
+        const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
         await userRepository.saveResetToken(user._id.toString(), hashedToken, expires);
-        await this.emailService.sendPasswordResetEmail(user.email, resetToken);
 
-        console.log('✅ Password reset email sent to:', user.email);
+        // Always log the token to console for easy testing
+        console.log('\n' + '='.repeat(80));
+        console.log('🔑 PASSWORD RESET TOKEN (copy this for testing)');
+        console.log('='.repeat(80));
+        console.log('Email:', user.email);
+        console.log('Token:', resetToken);
+        console.log('Reset URL:', `${process.env.FRONTEND_URL || 'http://localhost:3001'}/reset-password?token=${resetToken}`);
+        console.log('='.repeat(80) + '\n');
+
+        // Try to send email — but don't crash the request if it fails
+        try {
+            await this.emailService.sendPasswordResetEmail(user.email, resetToken);
+            console.log('✅ Password reset email sent to:', user.email);
+        } catch (error) {
+            console.error('⚠️ Email send failed (token still valid, check console above):', error);
+            // Do NOT rethrow — the token is saved, user can still reset via the logged URL
+        }
     }
 
     async resetPassword(token: string, newPassword: string): Promise<void> {
@@ -232,7 +243,13 @@ export class UserService {
         });
 
         await userRepository.clearResetToken(user._id.toString());
-        await this.emailService.sendPasswordResetConfirmation(user.email);
+
+        // Try to send confirmation — don't crash if it fails
+        try {
+            await this.emailService.sendPasswordResetConfirmation(user.email);
+        } catch (error) {
+            console.error('⚠️ Confirmation email failed:', error);
+        }
 
         console.log('✅ Password reset successful for user:', user.email);
     }
